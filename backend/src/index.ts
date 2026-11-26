@@ -371,7 +371,7 @@ app.get("/api/health", (c) => c.json({
 // 故意放在 health 旁边；与 /api/auth 不同的是它们是完全公开的只读查询，
 // 不涉及写操作、不记录审计日志。
 app.route("/api/version", versionRouter);
-// [local build] 版本检查路由已移除：不再向 api.github.com 发请求
+// [local build] 版本检查路由已移除（不再请求上游 release 信息）
 // app.route("/api/releases", releasesRouter);
 
 // OpenAPI 规范（无需 JWT）

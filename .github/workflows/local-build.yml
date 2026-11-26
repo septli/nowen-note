@@ -55,7 +55,9 @@ jobs:
         continue-on-error: true
         run: |
           set +e
-          npx --no-install electron-builder --win dir --config electron/builder.config.js --publish never > build-dir.log 2>&1
+          echo "=== node $(node -v) ===" > build-dir.log
+          ls node_modules/electron-builder/ 2>&1 | head -10 >> build-dir.log
+          node node_modules/electron-builder/cli.js --win dir --config electron/builder.config.js --publish never >> build-dir.log 2>&1
           echo "exit=$?" >> build-dir.log
           ls -la dist-electron >> build-dir.log 2>&1
           tail -n 40 build-dir.log
@@ -63,10 +65,11 @@ jobs:
       - name: Zip unpacked
         if: always()
         run: |
-          ls -la dist-electron/win-unpacked 2>/dev/null | head -20
+          ls -la dist-electron/win-unpacked 2>/dev/null | head -20 || true
           if [ -d dist-electron/win-unpacked ]; then
-            7z a -tzip nowen-windows-portable.zip ./dist-electron/win-unpacked/* > /dev/null
-            echo "zipped"
+            7z a -tzip nowen-windows-portable.zip ./dist-electron/win-unpacked/* > /dev/null && echo "zipped"
+          else
+            echo "win-unpacked not found"
           fi
 
       - uses: actions/upload-artifact@v4
