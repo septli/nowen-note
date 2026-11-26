@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { getFallbackServerUrl, setFallbackServerUrl } from "@/lib/api";
 import { OfflineAvailability } from "./OfflineAvailability";
 import {
   AlertTriangle,
@@ -37,6 +38,8 @@ export function SyncSettingsPanel() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [serverUrl, setServerUrl] = useState("");
+  // 备用地址：主地址不通时自动切换（主地址填局域网、备用填 Tailscale）
+  const [fallbackUrl, setFallbackUrl] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [twoFactorTicket, setTwoFactorTicket] = useState("");
@@ -51,6 +54,7 @@ export function SyncSettingsPanel() {
       if (savedUrl) {
         setServerUrl((current) => current || savedUrl);
       }
+      setFallbackUrl((current) => current || getFallbackServerUrl());
       setUnavailable(false);
       setDiagnostics(null);
       setDiagnosticsError(null);
@@ -110,9 +114,20 @@ export function SyncSettingsPanel() {
     setError(null);
     setNotice(null);
     try {
-      const result = await loginSyncServer(twoFactorTicket
-        ? { serverUrl: trimmed, ticket: twoFactorTicket, code: twoFactorCode.trim() }
-        : { serverUrl: trimmed, username: username.trim(), password });
+      const attemptLogin = (targetUrl: string) => loginSyncServer(twoFactorTicket
+        ? { serverUrl: targetUrl, ticket: twoFactorTicket, code: twoFactorCode.trim() }
+        : { serverUrl: targetUrl, username: username.trim(), password });
+
+      // 主地址不通时自动改试备用地址（家庭局域网 / 外出 Tailscale）
+      const fallbackTrimmed = fallbackUrl.trim();
+      let result;
+      try {
+        result = await attemptLogin(trimmed);
+      } catch (primaryError) {
+        if (!fallbackTrimmed || fallbackTrimmed === trimmed) throw primaryError;
+        result = await attemptLogin(fallbackTrimmed);
+        setNotice(`主地址连接失败，已改用备用地址 ${fallbackTrimmed}`);
+      }
       if (result.requiresTwoFactor) {
         setTwoFactorTicket(result.ticket);
         setTwoFactorCode("");
@@ -122,6 +137,8 @@ export function SyncSettingsPanel() {
       setPassword("");
       setTwoFactorTicket("");
       setTwoFactorCode("");
+      // 备用地址随登录一起保存：主地址不通时启动会自动切过去
+      setFallbackServerUrl(fallbackUrl.trim());
       if (result.bootstrapRequired) {
         await bootstrap();
       } else {
@@ -294,6 +311,20 @@ export function SyncSettingsPanel() {
                 disabled={busy || !!twoFactorTicket}
                 required
               />
+            </label>
+            <label className="block space-y-1.5 text-xs">
+              <span>备用地址（可选）</span>
+              <input
+                type="url"
+                value={fallbackUrl}
+                onChange={(event) => setFallbackUrl(event.target.value)}
+                placeholder="https://your-server.your-tailnet.ts.net:3000"
+                className="w-full rounded border bg-transparent px-3 py-2 text-sm"
+                disabled={busy || !!twoFactorTicket}
+              />
+              <span className="block text-[11px] leading-relaxed text-muted-foreground">
+                主地址不通时自动切换。建议主地址填局域网地址，这里填 Tailscale 地址；留空表示不启用。
+              </span>
             </label>
             {twoFactorTicket ? (
               <label className="block space-y-1.5 text-xs">

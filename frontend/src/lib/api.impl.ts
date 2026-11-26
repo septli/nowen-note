@@ -275,6 +275,9 @@ export async function ensureReachableServerUrl(timeoutMs = 2500): Promise<string
   const primary = getServerUrl();
   const fallback = getFallbackServerUrl();
   if (!fallback || fallback === primary) return primary;
+  // 桌面端内置后端是 loopback（127.0.0.1:xxxxx），它永远在线也不需要备用；
+  // 双地址只对「连接远程服务器的客户端」有意义。
+  if (/^https?:\/\/(127\.0\.0\.1|localhost|\[::1\])/i.test(primary)) return primary;
   if (primary && await probeServerHealth(primary, timeoutMs)) return primary;
   if (await probeServerHealth(fallback, timeoutMs)) {
     setServerUrl(fallback);
