@@ -2,9 +2,6 @@ name: Build Clients (local, no hot-update)
 # trigger: dual server address feature
 # trigger: UI cleanup (no download tab, trimmed about)
 
-permissions:
-  contents: write
-
 on:
   workflow_dispatch:
   push:
@@ -87,23 +84,6 @@ jobs:
             dist-electron/*.zip
           if-no-files-found: warn
 
-      - name: Publish Windows build to artifacts branch
-        if: always()
-        run: |
-          set -e
-          mkdir -p /tmp/pubw && cd /tmp/pubw
-          git init -q
-          git config user.name "ci"
-          git config user.email "ci@local"
-          cp "$GITHUB_WORKSPACE/build-dir.log" . 2>/dev/null || echo "no build-dir.log" > build-dir.log
-          cp "$GITHUB_WORKSPACE/nowen-windows-portable.zip" . 2>/dev/null || true
-          ls -la
-          git add .
-          git commit -q -m "windows $(date -u +%Y%m%d-%H%M%S)"
-          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:artifacts-windows
-          echo "pushed to artifacts-windows"
-
-
   android:
     runs-on: ubuntu-latest
     steps:
@@ -156,24 +136,3 @@ jobs:
             frontend/android/app/build/outputs/apk/**/*.apk
             frontend/android/gradle.log
           if-no-files-found: warn
-
-      - name: Publish APK to artifacts branch
-        if: success()
-        run: |
-          set -e
-          mkdir -p /tmp/pub && cd /tmp/pub
-          git init -q
-          git config user.name "ci"
-          git config user.email "ci@local"
-          find "$GITHUB_WORKSPACE/frontend/android" -name "*.apk" -exec cp {} . \; 2>/dev/null || true
-          ls -la
-          if ls *.apk >/dev/null 2>&1; then
-            git add .
-            git commit -q -m "android $(date -u +%Y%m%d-%H%M%S)"
-            git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:artifacts-android
-            echo "pushed-to-artifacts-android"
-          else
-            echo "no-apk"
-            exit 1
-          fi
-
