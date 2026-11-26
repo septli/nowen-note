@@ -483,6 +483,8 @@ module.exports = {
     "electron/**/*",
     "!electron/builder.config.js",
     "!electron/node/**/*",
+    // [local build] 测试文件不进产物（含已废弃的热更新地址常量）
+    "!electron/__tests__/**/*",
     // package.json 用于 electron-builder 读取 dependencies 并自动收集运行时依赖
     "package.json",
     // node_modules/**/* 已删除：electron-builder 会自动从 package.json 的 dependencies

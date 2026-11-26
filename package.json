@@ -72,8 +72,9 @@
     "@capacitor/haptics": "^8.0.1",
     "@capacitor/keyboard": "^8.0.1",
     "@capacitor/splash-screen": "^8.0.1",
-    "@capacitor/status-bar": "^8.0.1",
-    "electron-updater": "^6.3.9"
+    "@capacitor/status-bar": "^8.0.1"
   },
-  "engines": { "node": ">=24.22.1 <25" }
+  "engines": {
+    "node": ">=24.22.1 <25"
+  }
 }

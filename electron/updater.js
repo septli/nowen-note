@@ -27,11 +27,9 @@ const { createPreUpdateBackup } = require("./db-backup");
 
 
 let autoUpdater = null;
-try {
-  autoUpdater = require("electron-updater").autoUpdater;
-} catch (error) {
-  console.warn("[updater] electron-updater 未安装，更新功能已禁用。", error?.message || "");
-}
+// [local build] 整包自动更新已彻底禁用：不加载 electron-updater，
+// 因此不会构造 GitHub provider，也不会向 api.github.com 发任何请求。
+// updaterDisabledReason() 会因 autoUpdater 为空直接返回 "updater-unavailable"。
 
 let initialized = false;
 let checkPromise = null;
