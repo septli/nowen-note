@@ -2,7 +2,8 @@ import { useState } from "react";
 import { DatabaseZap, Download, RefreshCw } from "lucide-react";
 import { getHotUpdateController, useHotUpdateSnapshot } from "@/lib/hotUpdate";
 
-const APK_DOWNLOAD_URL = "https://github.com/cropflre/nowen-note/releases/latest";
+// 本地构建：不指向任何在线下载页
+const APK_DOWNLOAD_URL = "";
 
 /**
  * 本地库的版本比当前代码新时显示的保护页（DCC-013）。
@@ -26,6 +27,7 @@ export default function HotUpdateDatabaseGuard({ databaseVersion, supportedVersi
   };
 
   const openDownload = () => {
+    if (!APK_DOWNLOAD_URL) return;
     try {
       window.open(APK_DOWNLOAD_URL, "_blank", "noopener,noreferrer");
     } catch {

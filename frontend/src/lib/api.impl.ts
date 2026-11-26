@@ -1475,53 +1475,6 @@ export const api = {
 
   // 取 GitHub 仓库最新 release（由后端做代理 + 60s 缓存，失败降级）。
   // 后端永远返回 200：成功 { available: true, ... }；失败 { available: false, reason }。
-  getLatestRelease: async (): Promise<
-    | {
-      available: true;
-      tag: string;
-      version: string;
-      name: string;
-      htmlUrl: string;
-      publishedAt: string;
-      prerelease: boolean;
-      draft: boolean;
-      body?: string;
-      // 资产列表：每条对应一个 GitHub release asset（exe/dmg/apk/fpk/upk 等）。
-      // 后端从 GitHub API 整理后下发，前端在「下载客户端」面板里按文件名分类。
-      assets: Array<{
-        name: string;
-        size: number;
-        contentType: string;
-        browserDownloadUrl: string;
-      }>;
-    }
-    | { available: false; reason: string }
-  > => {
-    try {
-      const res = await fetch(`${getBaseUrl()}/releases/latest`);
-      if (!res.ok) return { available: false, reason: `HTTP ${res.status}` };
-      return res.json();
-    } catch (e) {
-      return { available: false, reason: e instanceof Error ? e.message : String(e) };
-    }
-  },
-
-
-  // Only returns R2 URLs if the server verified all ten manifest entries against
-  // the current official GitHub release, including exact filename and size.
-  getLatestReleaseMirror: async (): Promise<
-    | { available: true; tag: string; assets: Array<{ name: string; size: number; downloadUrl: string }> }
-    | { available: false; tag: string }
-  > => {
-    try {
-      const res = await fetch(`${getBaseUrl()}/releases/latest/mirror`);
-      if (!res.ok) return { available: false, tag: "" };
-      return res.json();
-    } catch {
-      return { available: false, tag: "" };
-    }
-  },
-
   // User
   getMe: () => request<User>("/me"),
   claimOnboardingWelcome: () => request<{ noteId: string | null }>("/onboarding/welcome", {

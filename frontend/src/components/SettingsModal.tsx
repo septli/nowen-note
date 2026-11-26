@@ -28,7 +28,6 @@ import UserManagement from "@/components/UserManagement";
 import WorkspaceManagement from "@/components/WorkspaceManagement";
 import WhatsNewModal from "@/components/WhatsNewModal";
 import AuthorStoryModal from "@/components/AuthorStoryModal";
-import DownloadPanel from "@/components/DownloadPanel";
 import PreferencesPanel from "@/components/settings/preferences/PreferencesPanel";
 import { revealSettingsTarget } from "@/components/settings/preferences/revealSettingsTarget";
 import type { RelatedSettingsTab } from "@/components/settings/preferences/preferenceSearch";
@@ -91,7 +90,7 @@ class PanelErrorBoundary extends React.Component<
  * 展示：
  *   - 当前客户端版本（编译期 __APP_VERSION__）
  *   - 服务端版本（/api/version, 由后端从根 package.json 解析）
- *   - GitHub 最新 release（后端 /api/releases/latest 代理，含 60s 缓存）
+ *   - 本地构建不查询上游 release
  *
  * 交互：
  *   - 桌面端（Electron）额外渲染"检查更新"按钮，走 electron-updater；
@@ -138,19 +137,16 @@ function VersionCompareCard() {
     let cancelled = false;
     setLoading(true);
     setServerError(null);
-    Promise.allSettled([api.getVersion(), api.getLatestRelease()])
-      .then(([v, r]) => {
+    Promise.allSettled([api.getVersion()])
+      .then(([v]) => {
         if (cancelled) return;
         if (v.status === "fulfilled") {
           setServerVersion(v.value.appVersion || null);
         } else {
           setServerError(v.reason instanceof Error ? v.reason.message : String(v.reason));
         }
-        if (r.status === "fulfilled") {
-          setRelease(r.value);
-        } else {
-          setRelease({ available: false, reason: "request_failed" });
-        }
+        // 本地构建：不再向上游查询最新 release
+        setRelease({ available: false, reason: "disabled" });
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -284,17 +280,8 @@ function VersionCompareCard() {
           )}
           {portable ? (
             <>
-              <a
-                href="https://github.com/cropflre/nowen-note/releases/latest"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent-primary text-white text-xs font-medium hover:opacity-90"
-              >
-                <ExternalLink size={12} />
-                前往下载页
-              </a>
               <p className="text-[11px] text-zinc-400 dark:text-zinc-500 text-center leading-relaxed">
-                免安装版不支持自动更新，请下载新版本 portable.exe 替换当前文件。
+                本地构建，不提供在线更新。需要新版本时请自行重新构建替换。
               </p>
             </>
           ) : (
@@ -1230,7 +1217,7 @@ const SettingsModal = React.forwardRef<HTMLDivElement, SettingsModalProps>(
     // 「下载客户端」面板：面向所有用户（含未登录、本地、云端）。需求背景：
     //   用户主要在中国大陆，GitHub Releases 下载体验差，这里按平台列出产物并提供
     //   「GitHub 直连 + 多个公共加速代理」的换源能力。与 about 的「前往下载页」区别：后者只能调起
-    //   GitHub 。该面板本身不调用任何需要鉴权的接口（releases/latest 未鉴权）。
+    //   该面板不调用任何需要鉴权的接口。
     { id: "about" as const, label: t('about.title'), icon: Info },
   ];
 

@@ -47,7 +47,6 @@ export function installMobileLocalFirstBridge(
   const originals = {
     getMe: target.getMe,
     getVersion: target.getVersion,
-    getLatestRelease: target.getLatestRelease,
     getSiteSettings: target.getSiteSettings,
     getFonts: target.getFonts,
     getFontsPublic: target.getFontsPublic,
@@ -114,7 +113,6 @@ export function installMobileLocalFirstBridge(
       frontendBuildId: undefined,
       minClientVersion: undefined,
     });
-    target.getLatestRelease = async () => ({ available: false, reason: "mobile_local_mode" });
     target.getSiteSettings = async () => ({ web_ui_enabled: "false" });
     // 打开设置页不再为了字体列表触发服务器请求。设备本地模式只支持内置字体，
     // SiteSettingsProvider 会把自定义字体 id 自动降级为默认字体。
@@ -318,7 +316,6 @@ export function installMobileLocalFirstBridge(
     Object.assign(target, {
       getMe: originals.getMe,
       getVersion: originals.getVersion,
-      getLatestRelease: originals.getLatestRelease,
       getSiteSettings: originals.getSiteSettings,
       getFonts: originals.getFonts,
       getFontsPublic: originals.getFontsPublic,

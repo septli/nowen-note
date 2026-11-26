@@ -85,7 +85,7 @@ RUN npm ci --ignore-scripts --no-audit --no-fund
 COPY backend/ .
 RUN npx tsc --declaration false \
     && cp src/plugins/runner-child.mjs src/plugins/sandbox-child.mjs dist/plugins/ \
-    && find dist -type d -name __tests__ -prune -exec rm -rf {} +
+    && find dist -type d -name __tests__ -print0 | xargs -0 -r rm -rf
 
 # ---------- 后端生产依赖：按目标架构安装，只保留运行时需要的文件 ----------
 FROM node:24.22.1-alpine3.23 AS backend-deps

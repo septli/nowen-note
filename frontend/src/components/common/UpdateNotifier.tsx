@@ -121,7 +121,8 @@ function writeDismissed(key: string) {
 }
 
 // Android native 壳的 APK 下载页（落在 GitHub release 页，最稳）
-const APK_DOWNLOAD_URL = "https://github.com/cropflre/nowen-note/releases/latest";
+// 本地构建：不指向任何在线下载页
+const APK_DOWNLOAD_URL = "";
 
 /**
  * 简单的 semver 比较：a < b 返回 -1；a > b 返回 1；相等返回 0。
@@ -344,6 +345,7 @@ export default function UpdateNotifier() {
   };
 
   const handleOpenDownload = () => {
+    if (!APK_DOWNLOAD_URL) return;
     // Android WebView 里点超链接有时会被拦住；统一用 window.open 兜底到系统浏览器。
     try {
       window.open(APK_DOWNLOAD_URL, "_blank", "noopener,noreferrer");
