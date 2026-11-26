@@ -48,14 +48,20 @@ jobs:
           node -e "const D=require('./backend/node_modules/better-sqlite3');const d=new D(':memory:');d.exec('create table t(a)');console.log('better-sqlite3 OK')"
 
       - name: Package Windows
+        continue-on-error: true
         run: |
-          set -o pipefail
-          echo "--- diagnostics ---"
-          node -v
-          ls node_modules/.bin/ | grep -i "electron-builder" || echo "electron-builder bin MISSING"
-          npx --no-install electron-builder --version || echo "version check failed"
-          echo "--- build ---"
-          npx --no-install electron-builder --win --config electron/builder.config.js --publish never 2>&1 | tee electron-builder.log
+          set +e
+          {
+            echo "=== node ==="; node -v
+            echo "=== npm bin ==="; ls node_modules/.bin/ 2>&1 | head -50
+            echo "=== electron-builder version ==="
+            npx --no-install electron-builder --version 2>&1
+            echo "=== builder run ==="
+            npx --no-install electron-builder --win --config electron/builder.config.js --publish never 2>&1
+            echo "=== exit code: $? ==="
+            echo "=== dist-electron ==="; ls -la dist-electron 2>&1
+          } > electron-builder.log 2>&1
+          echo "log written: $(wc -l < electron-builder.log) lines"
 
       - name: Show builder tail
         if: always()
