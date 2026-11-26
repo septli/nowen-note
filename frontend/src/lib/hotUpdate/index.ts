@@ -14,12 +14,10 @@ import {
 
 export type { HotUpdateSnapshot } from "./controller";
 
+// [local build] 热更新通道已彻底移除：不再指向任何外部地址。
 const PRODUCTION_CHANNEL = {
-  urls: (runtimeVersion: string) => [
-    `https://download.nowen.cn/hot/stable/android/${runtimeVersion}.json`,
-    `https://github.com/cropflre/nowen-note/releases/latest/download/nowen-hot-android-${runtimeVersion}.json`,
-  ],
-  allowedOrigins: ["https://download.nowen.cn", "https://github.com"],
+  urls: (_runtimeVersion: string) => [] as string[],
+  allowedOrigins: [] as string[],
 };
 
 /** 只有 `vite build --mode hotupdate-test` 的测试包允许改用本机测试服务；正式构建永远走固定地址。 */
@@ -83,7 +81,8 @@ function safeStorage(): Pick<Storage, "getItem" | "setItem"> | null {
 
 export function createBrowserHotUpdateEnvironment(): HotUpdateEnvironment {
   return {
-    isSupported: () => Capacitor.getPlatform() === "android",
+    // [local build] 热更新在任何平台都不启用
+    isSupported: () => false,
     runtime: async () => {
       const info = await NowenHotUpdateRuntime.getInfo();
       return {

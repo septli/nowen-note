@@ -28,7 +28,7 @@ export interface HotUpdateManifest {
 export interface HotUpdateTrust {
   publicKeyPem: string;
   keyId: string;
-  /** 允许的下载地址来源（协议 + 主机 + 端口），例如 https://download.nowen.cn */
+  /** 允许的下载地址来源（协议 + 主机 + 端口）， */
   allowedOrigins: readonly string[];
 }
 

@@ -249,7 +249,7 @@ export default function DownloadPanel() {
           const urls: Record<string, string> = {};
           for (const item of mirror.assets) {
             const github = original.get(item.name);
-            const expected = `https://download.nowen.cn/${releaseTag}/${encodeURIComponent(item.name)}`;
+            const expected = `/${releaseTag}/${encodeURIComponent(item.name)}`;
             if (!github || github.size !== item.size || item.downloadUrl !== expected ||
                 Object.hasOwn(urls, item.name)) {
               setR2Status("unavailable");

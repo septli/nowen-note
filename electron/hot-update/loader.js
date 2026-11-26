@@ -9,12 +9,10 @@ const path = require("node:path");
 const Module = require("node:module");
 const { createHotUpdateRuntime } = require("./runtime");
 
+// [local build] 热更新通道已彻底移除：不指向任何外部地址
 const PRODUCTION_CHANNEL = {
-  urls: (runtimeVersion) => [
-    `https://download.nowen.cn/hot/stable/desktop/${runtimeVersion}.json`,
-    `https://github.com/cropflre/nowen-note/releases/latest/download/nowen-hot-desktop-${runtimeVersion}.json`,
-  ],
-  allowedOrigins: ["https://download.nowen.cn", "https://github.com"],
+  urls: () => [],
+  allowedOrigins: [],
 };
 
 function readConfig({ app, shellDir }) {

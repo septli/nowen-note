@@ -86,7 +86,8 @@ import tokensRouter from "./routes/tokens";
 import { createEmbeddedMcpRouter, createMcpSettingsRouter } from "./mcp";
 import userPreferencesRouter from "./routes/user-preferences";
 import versionRouter, { resolveAppVersion } from "./routes/version";
-import releasesRouter from "./routes/releases";
+// [local build] 版本检查模块不再引入
+// import releasesRouter from "./routes/releases";
 import { seedDatabase } from "./db/seed";
 import { initApiTokensTable, looksLikeApiToken, resolveApiToken } from "./lib/api-tokens";
 import { enforceApiTokenAccess } from "./middleware/api-token-resource-scope";
@@ -370,7 +371,8 @@ app.get("/api/health", (c) => c.json({
 // 故意放在 health 旁边；与 /api/auth 不同的是它们是完全公开的只读查询，
 // 不涉及写操作、不记录审计日志。
 app.route("/api/version", versionRouter);
-app.route("/api/releases", releasesRouter);
+// [local build] 版本检查路由已移除：不再向 api.github.com 发请求
+// app.route("/api/releases", releasesRouter);
 
 // OpenAPI 规范（无需 JWT）
 app.get("/api/openapi.json", (c) => c.json(generateOpenAPISpec()));

@@ -2,7 +2,7 @@
  * Official R2 download mirror verification for Settings > Download clients.
  * R2 manifest is published only after all selected assets pass verification.
  */
-const R2_ORIGIN = "https://download.nowen.cn";
+const R2_ORIGIN = ""; // [local build] 外部镜像已移除
 const OFFICIAL_RELEASE_PREFIX = "https://github.com/cropflre/nowen-note/releases/download/";
 const TAG_PATTERN = /^v\d+\.\d+\.\d+$/;
 
