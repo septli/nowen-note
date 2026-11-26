@@ -318,12 +318,12 @@ export function SyncSettingsPanel() {
                 type="url"
                 value={fallbackUrl}
                 onChange={(event) => setFallbackUrl(event.target.value)}
-                placeholder="https://your-server.your-tailnet.ts.net:3000"
+                placeholder="留空则不启用"
                 className="w-full rounded border bg-transparent px-3 py-2 text-sm"
                 disabled={busy || !!twoFactorTicket}
               />
               <span className="block text-[11px] leading-relaxed text-muted-foreground">
-                主地址不通时自动切换。建议主地址填局域网地址，这里填 Tailscale 地址；留空表示不启用。
+                主地址不通时自动切换；留空表示不启用。
               </span>
             </label>
             {twoFactorTicket ? (
@@ -394,12 +394,12 @@ export function SyncSettingsPanel() {
                 type="url"
                 value={fallbackUrl}
                 onChange={(event) => setFallbackUrl(event.target.value)}
-                placeholder="https://your-server.your-tailnet.ts.net:3000"
+                placeholder="留空则不启用"
                 className="w-full rounded border bg-transparent px-3 py-2 text-sm"
                 disabled={busy}
               />
               <span className="block text-[11px] leading-relaxed text-muted-foreground">
-                主地址不通时自动切换。主地址填局域网、这里填 Tailscale；留空表示不启用。
+                主地址不通时自动切换；留空表示不启用。
               </span>
             </label>
             <button
