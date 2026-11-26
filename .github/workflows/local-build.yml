@@ -1,0 +1,96 @@
+name: Build Clients (local, no hot-update)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/local-build.yml'
+
+env:
+  NODE_OPTIONS: --max-old-space-size=6144
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.22.1'
+
+      - name: Install root deps
+        run: npm install --no-audit --no-fund
+
+      - name: Install backend deps
+        working-directory: backend
+        run: npm install --no-audit --no-fund
+
+      - name: Install frontend deps
+        working-directory: frontend
+        run: npm install --no-audit --no-fund
+
+      - name: Build backend + frontend
+        run: |
+          npm run build:backend
+          npm run build:frontend
+
+      - name: Rebuild native modules
+        run: npm run rebuild:native -- --target-platform=win32 --target-arch=x64
+
+      - name: Package Windows
+        run: npx electron-builder --win --config electron/builder.config.js
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nowen-windows
+          path: |
+            dist-electron/*.exe
+            dist-electron/*.zip
+          if-no-files-found: warn
+
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.22.1'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install root deps
+        run: npm install --no-audit --no-fund
+
+      - name: Install backend deps
+        working-directory: backend
+        run: npm install --no-audit --no-fund
+
+      - name: Install frontend deps
+        working-directory: frontend
+        run: npm install --no-audit --no-fund
+
+      - name: Build frontend
+        run: npm run build:frontend
+
+      - name: Capacitor sync
+        working-directory: frontend
+        run: npx cap sync android
+
+      - name: Build APK
+        working-directory: frontend/android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nowen-android
+          path: frontend/android/app/build/outputs/apk/**/*.apk
+          if-no-files-found: error
