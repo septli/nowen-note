@@ -7,15 +7,23 @@ ARG TARGETARCH=amd64
 # ---------- sqlite-vec: 按目标架构编译 musl 扩展（npm Linux 预编译包使用 glibc） ----------
 FROM node:24.22.1-alpine3.23 AS sqlite-vec-build
 WORKDIR /build
-RUN apk add --no-cache build-base
+RUN apk add --no-cache build-base gettext sqlite-dev
 # [local build] 改用构建上下文内的源码包：api.github.com 的 release asset 接口对本网络出口
 # 返回 403（匿名限流），构建必然失败。源码取自
 # https://github.com/asg017/sqlite-vec/archive/refs/tags/v0.1.9.tar.gz
 COPY build-cache/sqlite-vec-0.1.9.tar.gz /build/sqlite-vec.tar.gz
-# v0.1.9 的 BSD u_int*_t 别名不适用于 musl；使用源码已包含的 stdint.h 类型。
+# sqlite-vec.h 在源码树里是生成物（Makefile 里由 sqlite-vec.h.tmpl + VERSION 推出），
+# 归档里没有现成头文件；这里手工做同样的替换，避免引入 make/git 依赖。
+# v0.1.9 的 BSD u_int*_t 别名不适用于 musl，先删掉再编译。
 RUN echo "9823e737d9934dcbe85dff75d3fca81018a9beee803d70fa77b16faab5d61dc9  /build/sqlite-vec.tar.gz" | sha256sum -c - \
     && tar -xzf sqlite-vec.tar.gz --strip-components=1 \
     && sed -i '/^typedef u_int[0-9]*_t uint[0-9]*_t;$/d' sqlite-vec.c \
+    && V="$(cat VERSION)" \
+    && VERSION="$V" DATE="2026-11-26T00:00:00Z+0000" SOURCE="" \
+       VERSION_MAJOR="$(echo "$V" | cut -d. -f1)" \
+       VERSION_MINOR="$(echo "$V" | cut -d. -f2)" \
+       VERSION_PATCH="$(echo "$V" | cut -d. -f3 | cut -d- -f1)" \
+       envsubst < sqlite-vec.h.tmpl > sqlite-vec.h \
     && cc -O3 -fPIC -shared sqlite-vec.c -o vec0.so -lm
 
 # ---------- ffmpeg: 只编译动态照片转码用到的组件 ----------

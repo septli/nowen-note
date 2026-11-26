@@ -249,6 +249,9 @@ Promise.resolve()
   })
   .then(() => initializeDesktopLocalSession().catch(error => reportBootError('desktop-local-session',error,false)))
   .then(() => initializeMobileLocalFirstRuntime())
+  // 主地址不通且有备用地址时自动切换（家里局域网 / 外出 Tailscale）。
+  // 用动态 import 避免把庞大的 api 模块塞进首屏同步依赖；探测失败不阻塞启动。
+  .then(() => import("./lib/api").then((mod) => mod.ensureReachableServerUrl()).catch(() => ""))
   .then(
     () => renderEntry(),
     (error) => {

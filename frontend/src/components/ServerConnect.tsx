@@ -2,7 +2,7 @@
 import { motion } from "framer-motion";
 import { Loader2, Server, Wifi, CheckCircle2, AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { setServerUrl, testServerConnection } from "@/lib/api";
+import { setServerUrl, setFallbackServerUrl, testServerConnection } from "@/lib/api";
 import { buildServerUrl, parseServerUrl, type ServerAddressParts } from "@/lib/serverUrl";
 import ServerAddressInput from "@/components/ServerAddressInput";
 
@@ -23,29 +23,58 @@ export default function ServerConnect({ onConnected }: ServerConnectProps) {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [status, setStatus] = useState<"idle" | "ok" | "fail">("idle");
+  // 备用地址：主地址不通时自动切换（家里走局域网、外出走 Tailscale）。
+  const [fallbackParts, setFallbackParts] = useState<ServerAddressParts>({
+    protocol: "http",
+    host: "",
+    port: "",
+    path: "",
+  });
+  const [showFallback, setShowFallback] = useState(false);
   const { t } = useTranslation();
 
   // 尝试从 localStorage 恢复上次连接的地址
   useEffect(() => {
     const last = localStorage.getItem("nowen-server-url-last");
     if (last) setParts(parseServerUrl(last));
+    const fallback = localStorage.getItem("nowen-server-url-fallback");
+    if (fallback) {
+      setFallbackParts(parseServerUrl(fallback));
+      setShowFallback(true);
+    }
   }, []);
 
   const handleConnect = async (e: React.FormEvent) => {
     e.preventDefault();
     const serverUrl = buildServerUrl(parts);
     if (!serverUrl) return;
+    const fallbackUrl = buildServerUrl(fallbackParts);
 
     setIsLoading(true);
     setError("");
     setNotice("");
     setStatus("idle");
 
-    const result = await testServerConnection(serverUrl);
+    let result = await testServerConnection(serverUrl);
+    let effectiveUrl = serverUrl;
+    let usedFallback = false;
+
+    // 主地址不通且填了备用地址：再试备用，成功则用它
+    if (!result.ok && fallbackUrl && fallbackUrl !== serverUrl) {
+      const fallbackResult = await testServerConnection(fallbackUrl);
+      if (fallbackResult.ok) {
+        result = fallbackResult;
+        effectiveUrl = fallbackUrl;
+        usedFallback = true;
+      }
+    }
 
     if (result.ok) {
       setStatus("ok");
       const notices = [
+        usedFallback
+          ? `主地址不通，已改用备用地址 ${effectiveUrl}`
+          : "",
         t("server.connectionDiagnostics", {
           apiPath: result.apiPath,
           websocketPath: result.websocketPath,
@@ -60,8 +89,14 @@ export default function ServerConnect({ onConnected }: ServerConnectProps) {
         result.websocketOk === false ? t("server.websocketUnavailable") : "",
       ].filter(Boolean);
       setNotice(notices.join(" "));
-      setServerUrl(serverUrl);
-      localStorage.setItem("nowen-server-url-last", serverUrl);
+      setServerUrl(effectiveUrl);
+      localStorage.setItem("nowen-server-url-last", effectiveUrl);
+      if (fallbackUrl) {
+        // 生效的那个当主，另一个存成备用，保证两边都在
+        setFallbackServerUrl(usedFallback ? serverUrl : fallbackUrl);
+      } else {
+        setFallbackServerUrl("");
+      }
       onConnected();
     } else {
       setStatus("fail");
@@ -138,6 +173,36 @@ export default function ServerConnect({ onConnected }: ServerConnectProps) {
                 {t("server.addressHint")}
               </p>
             </div>
+
+            {/* 备用地址（可选）：主地址不通时自动切换 */}
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={() => setShowFallback((value) => !value)}
+                className="text-xs font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+              >
+                {showFallback ? "收起备用地址" : "添加备用地址（外出时用，如 Tailscale）"}
+              </button>
+            </div>
+
+            {showFallback && (
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  备用地址
+                </label>
+                <ServerAddressInput
+                  value={fallbackParts}
+                  onChange={(next) => {
+                    setFallbackParts(next);
+                    if (status !== "idle") setStatus("idle");
+                  }}
+                  accent="emerald"
+                />
+                <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
+                  主地址不通时自动切换。建议主地址填局域网地址，这里填 Tailscale 地址。
+                </p>
+              </div>
+            )}
 
             {/* 错误提示 */}
             {error && (

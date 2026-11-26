@@ -223,6 +223,67 @@ export function clearServerUrl() {
   } catch { /* ignore */ }
 }
 
+// ---------------------------------------------------------------------------
+// 双地址（主地址 + 备用地址）
+// 场景：家里填局域网地址、外出填 Tailscale 地址；主地址探测不通时自动切到备用。
+// 只做启动/连接时的切换，不在每条请求上做 failover，避免污染核心请求链。
+// ---------------------------------------------------------------------------
+
+const SERVER_URL_FALLBACK_KEY = "nowen-server-url-fallback";
+
+export function getFallbackServerUrl(): string {
+  if (!isNativeClientRuntime()) return "";
+  let raw = "";
+  try { raw = localStorage.getItem(SERVER_URL_FALLBACK_KEY) || ""; } catch { return ""; }
+  return _normalizeBase(raw);
+}
+
+export function setFallbackServerUrl(url: string) {
+  const normalized = _normalizeBase(url);
+  try {
+    if (normalized) localStorage.setItem(SERVER_URL_FALLBACK_KEY, normalized);
+    else localStorage.removeItem(SERVER_URL_FALLBACK_KEY);
+  } catch { /* ignore */ }
+}
+
+/** 轻量健康探测：只打 /api/health，带超时，不解析 API 路径、不测 WebSocket。 */
+async function probeServerHealth(serverUrl: string, timeoutMs = 4000): Promise<boolean> {
+  const base = _normalizeBase(serverUrl);
+  if (!base) return false;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(`${base}/api/health`, {
+      method: "GET",
+      signal: controller.signal,
+      cache: "no-store",
+    });
+    return response.ok;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * 保证当前 serverUrl 可达：主地址不通且配置了备用地址时，自动切到备用。
+ * 切换时把两者**交换**（备用变主、主变备），这样下次环境变化还能切回来。
+ * 返回最终使用的地址（两个都不通时返回主地址，交由上层报错）。
+ */
+export async function ensureReachableServerUrl(timeoutMs = 2500): Promise<string> {
+  const primary = getServerUrl();
+  const fallback = getFallbackServerUrl();
+  if (!fallback || fallback === primary) return primary;
+  if (primary && await probeServerHealth(primary, timeoutMs)) return primary;
+  if (await probeServerHealth(fallback, timeoutMs)) {
+    setServerUrl(fallback);
+    setFallbackServerUrl(primary);
+    return fallback;
+  }
+  return primary;
+}
+
 /**
  * 应用启动时调用一次，处理：
  *   1. Electron query serverUrl → 迁移到 localStorage

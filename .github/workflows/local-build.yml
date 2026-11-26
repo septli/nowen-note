@@ -1,4 +1,5 @@
 name: Build Clients (local, no hot-update)
+# trigger: dual server address feature
 # trigger: UI cleanup (no download tab, trimmed about)
 
 on:
