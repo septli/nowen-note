@@ -16,6 +16,7 @@ import { AlertTriangle, CheckCircle2, Download, FolderInput, Loader2 } from "luc
 import { ConflictCenter } from "@/components/settings/ConflictCenter";
 import { SyncSettingsPanel } from "@/components/settings/SyncSettingsPanel";
 import ServerConnectionSettings from "@/components/settings/ServerConnectionSettings";
+import ServerFallbackSettings from "@/components/settings/ServerFallbackSettings";
 import {
   SyncV2DisabledError,
   fetchSyncDiagnostics,
@@ -107,6 +108,7 @@ function SyncSettingsContent({ mobile }: { mobile: boolean }) {
   if (disabled) {
     return (
       <div className="space-y-8">
+        <ServerFallbackSettings />
         <ServerConnectionSettings />
         <p className="text-sm text-muted-foreground">当前版本未启用多设备同步。笔记全部保存在此设备。</p>
       </div>
@@ -115,6 +117,7 @@ function SyncSettingsContent({ mobile }: { mobile: boolean }) {
 
   return (
     <div className="space-y-8">
+      <ServerFallbackSettings />
       <ServerConnectionSettings />
       {mobile ? <MobileSyncSettings /> : <SyncSettingsPanel />}
       <WorkspaceScopePanel />
