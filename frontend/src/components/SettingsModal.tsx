@@ -45,7 +45,7 @@ import { cn } from "@/lib/utils";
 import { detectShortcutSurface } from "@/lib/shortcutRegistry";
 import HotUpdateStatusCard from "./settings/HotUpdateStatusCard";
 
-type TabId = "appearance" | "preferences" | "shortcuts" | "ai" | "automations" | "security" | "tokens" | "data" | "sync" | "folderSync" | "users" | "workspaces" | "extensions" | "download" | "about";
+type TabId = "appearance" | "preferences" | "shortcuts" | "ai" | "automations" | "security" | "tokens" | "data" | "sync" | "folderSync" | "users" | "workspaces" | "extensions" | "about";
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -505,253 +505,6 @@ function AboutPanel() {
           <ExternalLink size={12} />
           {t('about.github')}
         </a>
-      </div>
-
-      {/* Nowen 开源实验室公众号 */}
-      <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30">
-        <div className="min-w-0">
-          <div className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            {t('about.communityQrTitle')}
-          </div>
-          <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-            {t('about.communityQrDesc')}
-          </div>
-        </div>
-        <img
-          src={communityQr}
-          alt={t('about.communityQrTitle')}
-          className="w-28 h-28 object-contain rounded-lg bg-white p-1 shrink-0"
-          loading="lazy"
-          draggable={false}
-        />
-      </div>
-
-      {/* 更新日志 */}
-      <button
-        type="button"
-        onClick={() => setShowWhatsNew(true)}
-        className="w-full flex items-center justify-between p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/50 transition-colors text-left"
-      >
-        <div className="flex items-center gap-3">
-          <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-accent-primary/10 text-accent-primary">
-            <Sparkles size={16} />
-          </span>
-          <div>
-            <div className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              {t('about.changelog')}
-            </div>
-            <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-              {t('about.changelogDesc')}
-            </div>
-          </div>
-        </div>
-        <span className="text-xs text-zinc-500 dark:text-zinc-400 shrink-0">
-          {t('about.viewChangelog')}
-        </span>
-      </button>
-
-      {/* 作者感言 —— 项目背后的故事 */}
-      <button
-        type="button"
-        onClick={() => setShowAuthorStory(true)}
-        className="w-full flex items-center justify-between p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/50 transition-colors text-left"
-      >
-        <div className="flex items-center gap-3">
-          <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-500/10 text-amber-500">
-            <BookOpen size={16} />
-          </span>
-          <div>
-            <div className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              {t('about.authorStory')}
-            </div>
-            <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-              {t('about.authorStoryDesc')}
-            </div>
-          </div>
-        </div>
-        <span className="text-xs text-zinc-500 dark:text-zinc-400 shrink-0">
-          {t('about.authorStoryAction')}
-        </span>
-      </button>
-
-      <a
-        href={`mailto:${contactEmail}`}
-        className="flex w-full items-center gap-3 rounded-xl border border-app-border bg-app-surface p-4 text-left transition-colors hover:bg-app-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary"
-      >
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent-primary/10 text-accent-primary" aria-hidden>
-          <Building2 size={16} />
-        </span>
-        <div className="min-w-0">
-          <div className="text-sm font-medium text-tx-primary">{t('about.businessPartnerships')}</div>
-          <div className="mt-0.5 break-all text-xs text-tx-secondary">{contactEmail}</div>
-        </div>
-      </a>
-
-      {/* 意见与 Bug 反馈 */}
-      <a
-        href={feedbackMailto}
-        className="w-full flex items-center justify-between p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/50 transition-colors text-left"
-      >
-        <div className="flex items-center gap-3 min-w-0">
-          <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-sky-500/10 text-sky-500 shrink-0">
-            <Mail size={16} />
-          </span>
-          <div className="min-w-0">
-            <div className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              {t('about.feedback')}
-            </div>
-            <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-              {t('about.feedbackDesc')}
-            </div>
-          </div>
-        </div>
-        <div className="ml-4 text-right shrink-0">
-          <div className="text-xs text-zinc-500 dark:text-zinc-400">
-            {t('about.feedbackAction')}
-          </div>
-          <div className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">
-            {contactEmail}
-          </div>
-        </div>
-      </a>
-
-      {/* QQ 群反馈 */}
-      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 overflow-hidden">
-        <div className="flex items-center justify-between gap-3 p-4">
-          <div className="flex items-center gap-3 min-w-0">
-            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-sky-500/10 text-sky-500 shrink-0">
-              <Users size={16} />
-            </span>
-            <div className="min-w-0">
-              <div className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                {t('about.feedbackQqGroup')}
-              </div>
-              <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                {t('about.feedbackQqGroupDesc')}
-              </div>
-              <div className="text-xs font-medium text-zinc-600 dark:text-zinc-300 mt-1">
-                {t('about.feedbackQqGroupNumber', { number: feedbackQqGroupNumber })}
-              </div>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setFeedbackQqPreviewOpen(true)}
-            className="shrink-0 rounded-lg overflow-hidden cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
-            title={t('about.feedbackQqGroup')}
-            aria-label={t('about.feedbackQqGroup')}
-          >
-            <img
-              src={qqGroupQr}
-              alt={t('about.feedbackQqGroupNumber', { number: feedbackQqGroupNumber })}
-              className="w-16 h-16 object-cover bg-white p-1"
-              loading="lazy"
-              draggable={false}
-            />
-          </button>
-        </div>
-      </div>
-
-      {/* 支持作者 / 打赏 */}
-      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 overflow-hidden">
-        <button
-          type="button"
-          onClick={() => setShowSponsor((v) => !v)}
-          className="w-full flex items-center justify-between p-4 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/50 transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-rose-500/10 text-rose-500">
-              <Heart size={16} fill="currentColor" />
-            </span>
-            <div className="text-left">
-              <div className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                {t('about.sponsor')}
-              </div>
-              <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                {t('about.sponsorDesc')}
-              </div>
-            </div>
-          </div>
-          <span className="text-xs text-zinc-500 dark:text-zinc-400 shrink-0">
-            {showSponsor ? t('about.sponsorCollapse') : t('about.sponsorAction')}
-          </span>
-        </button>
-        <AnimatePresence initial={false}>
-          {showSponsor && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden"
-            >
-              <div className="px-4 pb-4 pt-2 flex flex-col items-center gap-3 border-t border-zinc-200/60 dark:border-zinc-800/60">
-                <div
-                  className="grid w-full max-w-xs grid-cols-2 rounded-lg bg-zinc-200/70 p-1 dark:bg-zinc-800"
-                  role="tablist"
-                  aria-label={t('about.sponsorMethod')}
-                >
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={sponsorMethod === "wechat"}
-                    onClick={() => setSponsorMethod("wechat")}
-                    className={cn(
-                      "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                      sponsorMethod === "wechat"
-                        ? "bg-emerald-500 text-white shadow-sm"
-                        : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100",
-                    )}
-                  >
-                    {t('about.sponsorWechat')}
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={sponsorMethod === "alipay"}
-                    onClick={() => setSponsorMethod("alipay")}
-                    className={cn(
-                      "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                      sponsorMethod === "alipay"
-                        ? "bg-blue-500 text-white shadow-sm"
-                        : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100",
-                    )}
-                  >
-                    {t('about.sponsorAlipay')}
-                  </button>
-                </div>
-                {/* 点击图片打开 Lightbox 看大图（按钮包裹 → 无障碍/键盘可达） */}
-                <button
-                  type="button"
-                  onClick={() => setSponsorPreviewOpen(true)}
-                  className="group relative rounded-lg overflow-hidden cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
-                  title={sponsorLabel}
-                  aria-label={sponsorLabel}
-                >
-                  <img
-                    src={sponsorImage}
-                    alt={sponsorLabel}
-                    className="w-44 sm:w-52 max-h-72 object-contain rounded-lg bg-white p-2 shadow-sm transition-transform duration-200 group-hover:scale-[1.02]"
-                    loading="lazy"
-                    draggable={false}
-                  />
-                  {/* hover 时浮现的放大图标提示 */}
-                  <span className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 px-2 py-1 rounded-md bg-black/60 text-white text-[11px]">
-                      <ZoomIn size={12} />
-                      点击放大
-                    </span>
-                  </span>
-                </button>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 text-center">
-                  {sponsorMethod === "wechat"
-                    ? t('about.sponsorWechatTip')
-                    : t('about.sponsorAlipayTip')}
-                </p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
       {/* 底部 */}
@@ -1478,7 +1231,6 @@ const SettingsModal = React.forwardRef<HTMLDivElement, SettingsModalProps>(
     //   用户主要在中国大陆，GitHub Releases 下载体验差，这里按平台列出产物并提供
     //   「GitHub 直连 + 多个公共加速代理」的换源能力。与 about 的「前往下载页」区别：后者只能调起
     //   GitHub 。该面板本身不调用任何需要鉴权的接口（releases/latest 未鉴权）。
-    { id: "download" as const, label: t('settings.download', { defaultValue: '下载客户端' }), icon: Download },
     { id: "about" as const, label: t('about.title'), icon: Info },
   ];
 
@@ -1679,7 +1431,6 @@ const SettingsModal = React.forwardRef<HTMLDivElement, SettingsModalProps>(
                   {activeTab === "data" && <DataManager />}
                   {activeTab === "sync" && <SyncSettingsTab />}
                   {activeTab === "folderSync" && <FolderSyncSettings />}
-                  {activeTab === "download" && <DownloadPanel />}
                   {activeTab === "about" && <AboutPanel />}
                 </PanelErrorBoundary>
               </motion.div>
