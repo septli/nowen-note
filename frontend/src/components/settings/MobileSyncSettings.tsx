@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { connectSyncServer, disableSync, fetchSyncDiagnostics, fetchSyncSettings, triggerSyncNow, type SyncDiagnostics, type SyncSettingsResponse } from "@/lib/syncLocalApi";
-import { getServerUrl } from "@/lib/api";
+import { getServerUrl, getFallbackServerUrl, setFallbackServerUrl } from "@/lib/api";
 import { isMobileLocalMode, requestMobileAccountLogin } from "@/lib/mobileLocalMode";
 import { OfflineAvailability } from "./OfflineAvailability";
 
@@ -11,6 +11,8 @@ export default function MobileSyncSettings() {
   const [settings, setSettings] = useState<SyncSettingsResponse | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [fallbackUrl, setFallbackUrl] = useState(() => getFallbackServerUrl());
   const syncEnabled = settings?.mode === "server";
   const reload = useCallback(async () => {
     try {
@@ -33,14 +35,29 @@ export default function MobileSyncSettings() {
       window.location.reload();
       return;
     }
-    setBusy(true); setError(null);
+    setBusy(true); setError(null); setNotice(null);
     try {
-      if (enabled) await connectSyncServer({ serverUrl: settings?.profiles[0]?.serverUrl || getServerUrl() });
-      else await disableSync();
+      if (enabled) {
+        const primary = settings?.profiles[0]?.serverUrl || getServerUrl();
+        const fallback = fallbackUrl.trim();
+        try {
+          await connectSyncServer({ serverUrl: primary });
+        } catch (primaryErr) {
+          if (!fallback || fallback === primary) throw primaryErr;
+          await connectSyncServer({ serverUrl: fallback });
+          setNotice(`主地址连接失败，已改用备用地址 ${fallback}`);
+        }
+      } else {
+        await disableSync();
+      }
       await reload();
     } catch {
       setError("mobileSync.settingsChangeFailed");
     } finally { setBusy(false); }
+  };
+  const saveFallback = () => {
+    setFallbackServerUrl(fallbackUrl.trim());
+    setNotice(fallbackUrl.trim() ? "备用地址已保存" : "备用地址已清空");
   };
   return <div className="space-y-4">
     <section className="space-y-3">
@@ -63,8 +80,25 @@ export default function MobileSyncSettings() {
             {syncEnabled && <span className="block text-xs text-tx-secondary">{t("mobileSync.connected", { url: settings.activeProfile?.serverUrl || "" })}</span>}
           </span>
         </label>
+        <div className="space-y-2 rounded-lg border border-app-border p-4">
+          <span className="block text-sm font-medium">备用地址（可选）</span>
+          <input
+            type="url"
+            value={fallbackUrl}
+            onChange={(event) => setFallbackUrl(event.target.value)}
+            placeholder="留空则不启用"
+            disabled={busy}
+            className="w-full rounded border border-app-border bg-transparent px-3 py-2 text-sm"
+          />
+          <p className="text-xs text-tx-tertiary">主地址不通时自动切换；留空表示不启用。</p>
+          <button type="button" onClick={saveFallback} disabled={busy}
+            className="rounded-md border border-app-border px-3 py-2 text-sm disabled:opacity-50">
+            保存备用地址
+          </button>
+        </div>
         <p className="text-xs text-tx-tertiary">{t("mobileSync.devicesHint")}</p>
       </> : <p className="text-sm text-tx-tertiary">{error ? t(error) : t("mobileSync.loadingSettings")}</p>}
+      {notice && <p className="text-xs text-tx-secondary">{notice}</p>}
     </section>
     <OfflineAvailability offline={diagnostics?.offline} />
     {settings?.authorizationState === "expired" && <div className="space-y-2 text-xs">
