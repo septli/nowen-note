@@ -386,6 +386,33 @@ export function SyncSettingsPanel() {
           </form>
         ) : null}
 
+        {!showLogin ? (
+          <div className="space-y-2 rounded-md border p-3">
+            <label className="block space-y-1.5 text-xs">
+              <span>备用地址（可选）</span>
+              <input
+                type="url"
+                value={fallbackUrl}
+                onChange={(event) => setFallbackUrl(event.target.value)}
+                placeholder="https://your-server.your-tailnet.ts.net:3000"
+                className="w-full rounded border bg-transparent px-3 py-2 text-sm"
+                disabled={busy}
+              />
+              <span className="block text-[11px] leading-relaxed text-muted-foreground">
+                主地址不通时自动切换。主地址填局域网、这里填 Tailscale；留空表示不启用。
+              </span>
+            </label>
+            <button
+              type="button"
+              onClick={() => { setFallbackServerUrl(fallbackUrl.trim()); setNotice("备用地址已保存"); setError(null); }}
+              disabled={busy}
+              className="rounded border px-3 py-1.5 text-xs disabled:opacity-50"
+            >
+              保存备用地址
+            </button>
+          </div>
+        ) : null}
+
         <p className="text-xs text-muted-foreground">连接后，本机已有笔记也将同步到该账号。请确认服务器与账号正确。</p>
         <OfflineAvailability offline={diagnostics?.offline} />
         {notice ? (
