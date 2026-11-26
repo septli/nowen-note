@@ -49,7 +49,12 @@ jobs:
       - name: Package Windows
         run: |
           set -o pipefail
-          npx electron-builder --win --config electron/builder.config.js --publish never 2>&1 | tee electron-builder.log
+          echo "--- diagnostics ---"
+          node -v
+          ls node_modules/.bin/ | grep -i "electron-builder" || echo "electron-builder bin MISSING"
+          npx --no-install electron-builder --version || echo "version check failed"
+          echo "--- build ---"
+          npx --no-install electron-builder --win --config electron/builder.config.js --publish never 2>&1 | tee electron-builder.log
 
       - name: Show builder tail
         if: always()
