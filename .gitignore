@@ -67,3 +67,4 @@ frontend-dev.out
 .worktrees/
 frontend/dist.bak
 backend/dist.root-owned-backup/
+*.bak-ui
